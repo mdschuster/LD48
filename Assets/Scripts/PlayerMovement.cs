@@ -26,12 +26,15 @@ public class PlayerMovement : MonoBehaviour
     public LayerMask mask;
     public GameObject score;
 
+    public Tilemap dirtTileMap;
+
 
 
     // Start is called before the first frame update
     void Start()
     {
         playerData = GetComponent<PlayerData>();
+        dirtTileMap = GameManager.instance().getDirtTilemap();
 
     }
 
@@ -39,10 +42,10 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         rayOrigin = this.transform.position;
-        rayHitDown = Physics2D.Raycast(rayOrigin, Vector2.down, 0.75f, mask);
-        rayHitUp = Physics2D.Raycast(rayOrigin, Vector2.up, 0.75f, mask);
-        rayHitLeft = Physics2D.Raycast(rayOrigin, Vector2.left, 0.75f, mask);
-        rayHitRight = Physics2D.Raycast(rayOrigin, Vector2.right, 0.75f, mask);
+
+
+
+
         Debug.DrawRay(rayOrigin, Vector3.down * 0.75f, Color.red, 0.01f);
         Debug.DrawRay(rayOrigin, Vector3.up * 0.75f, Color.red, 0.01f);
         Debug.DrawRay(rayOrigin, Vector3.left * 0.75f, Color.red, 0.01f);
@@ -51,6 +54,7 @@ public class PlayerMovement : MonoBehaviour
         //get input
         if (Input.GetKeyUp(KeyCode.UpArrow) && rayHitUp.collider == null)
         {
+            rayHitUp = Physics2D.Raycast(rayOrigin, Vector2.up, 0.75f, mask);
             moveUp = true;
             moveDown = false;
             moveRight = false;
@@ -58,6 +62,7 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetKeyUp(KeyCode.DownArrow))
         {
+            rayHitDown = Physics2D.Raycast(rayOrigin, Vector2.down, 0.75f, mask);
             if (rayHitDown.collider != null && rayHitDown.collider.tag == "Door")
             {
                 GameManager.instance().win();
@@ -73,6 +78,7 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetKeyUp(KeyCode.LeftArrow))
         {
+            rayHitLeft = Physics2D.Raycast(rayOrigin, Vector2.left, 0.75f, mask);
             if (rayHitLeft.collider != null)
             {
                 if (rayHitLeft.collider.GetComponent<Rock>() != null)
@@ -94,6 +100,7 @@ public class PlayerMovement : MonoBehaviour
         }
         if (Input.GetKeyUp(KeyCode.RightArrow))
         {
+            rayHitRight = Physics2D.Raycast(rayOrigin, Vector2.right, 0.75f, mask);
             if (rayHitRight.collider != null)
             {
                 if (rayHitRight.collider.GetComponent<Rock>() != null)
@@ -132,47 +139,47 @@ public class PlayerMovement : MonoBehaviour
         if (moveUp)
         {
             pos = playerData.getGridPosition() + up;
-            hasTile = GameManager.instance().getDirtTilemap().HasTile(pos);
+            hasTile = dirtTileMap.HasTile(pos);
 
             playerData.setGridPosition(pos);
-            this.transform.position = GameManager.instance().getDirtTilemap().GetCellCenterWorld(pos);
+            this.transform.position = dirtTileMap.GetCellCenterWorld(pos);
 
             moveUp = false;
         }
         if (moveDown)
         {
             pos = playerData.getGridPosition() + down;
-            hasTile = GameManager.instance().getDirtTilemap().HasTile(pos);
+            hasTile = dirtTileMap.HasTile(pos);
 
             playerData.setGridPosition(pos);
-            this.transform.position = GameManager.instance().getDirtTilemap().GetCellCenterWorld(pos);
+            this.transform.position = dirtTileMap.GetCellCenterWorld(pos);
 
             moveDown = false;
         }
         if (moveRight)
         {
             pos = playerData.getGridPosition() + right;
-            hasTile = GameManager.instance().getDirtTilemap().HasTile(pos);
+            hasTile = dirtTileMap.HasTile(pos);
 
             playerData.setGridPosition(pos);
-            this.transform.position = GameManager.instance().getDirtTilemap().GetCellCenterWorld(pos);
+            this.transform.position = dirtTileMap.GetCellCenterWorld(pos);
 
             moveRight = false;
         }
         if (moveLeft)
         {
             pos = playerData.getGridPosition() + left;
-            hasTile = GameManager.instance().getDirtTilemap().HasTile(pos);
+            hasTile = dirtTileMap.HasTile(pos);
 
 
             playerData.setGridPosition(pos);
-            this.transform.position = GameManager.instance().getDirtTilemap().GetCellCenterWorld(pos);
+            this.transform.position = dirtTileMap.GetCellCenterWorld(pos);
 
             moveLeft = false;
         }
         if (hasTile)
         {
-            TileBase tile = GameManager.instance().getDirtTilemap().GetTile(pos);
+            TileBase tile = dirtTileMap.GetTile(pos);
             if (tile == GameManager.instance().getGreenRuleTile())
             {
                 int value = GameManager.instance().greenTileMoney;
@@ -182,7 +189,7 @@ public class PlayerMovement : MonoBehaviour
             }
             moveSound(pos);
 
-            GameManager.instance().getDirtTilemap().SetTile(pos, null);
+            dirtTileMap.SetTile(pos, null); //WARNING, this is quite slow when using a composite collider and what is causing the framerate problem
         }
 
     }
